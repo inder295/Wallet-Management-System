@@ -87,8 +87,8 @@ export const loginUser=async(req:Request,res:Response) : Promise<Response> => {
             })
         }
 
-        const refreshToken=jwt.sign({userId:user._id},process.env.ACCESS_JWT_SECRET!,{expiresIn:'7d'});
-        const accessToken=jwt.sign({userId:user._id},process.env.REFRESH_JWT_SECRET!,{expiresIn:'10m'});
+        const refreshToken=jwt.sign({userId:user._id},process.env.REFRESH_JWT_SECRET!,{expiresIn:'7d'});
+        const accessToken=jwt.sign({userId:user._id},process.env.ACCESS_JWT_SECRET!,{expiresIn:'10m'});
 
         user.refreshToken=refreshToken;
         
@@ -121,7 +121,11 @@ export const check=async(req : Request,res: Response) : Promise<Response> =>{
     try {
 
         return res.status(200).json({
-            message:"Everything clear"
+            message:"Everything clear",
+             user: {
+                _id: req.user._id,
+                fullname: req.user.fullname
+            }
         })
 
 
@@ -146,16 +150,15 @@ export const refreshtoken=async(req:Request,res:Response): Promise<Response> =>{
 
         const decode =await jwt.verify(token,process.env.REFRESH_JWT_SECRET!);
 
-        const user=await User.findById(decode);
-
+        const user=await User.findById(decode.userId);
         if(!user || user.refreshToken !== token){
             return res.status(401).json({
                 message:"No user found"
             })
         }
 
-        const accessToken=jwt.sign({id: user._id},process.env.ACCESS_JWT_SECRET!,{expiresIn:'10m'});
-        const refreshToken=jwt.sign({id: user._id},process.env.REFRESH_JWT_SECRET!,{expiresIn:'7d'});
+        const accessToken=jwt.sign({userId: user._id},process.env.ACCESS_JWT_SECRET!,{expiresIn:'10m'});
+        const refreshToken=jwt.sign({userId: user._id},process.env.REFRESH_JWT_SECRET!,{expiresIn:'7d'});
 
         user.refreshToken=refreshToken;
         res.cookie("refreshToken",refreshToken,{
@@ -183,6 +186,7 @@ export const refreshtoken=async(req:Request,res:Response): Promise<Response> =>{
 
         return res.status(403).json({
         message: "Invalid refresh token",
+        error:error
         });
   }
     
