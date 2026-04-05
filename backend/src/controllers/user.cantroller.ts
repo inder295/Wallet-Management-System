@@ -116,3 +116,118 @@ export const loginUser=async(req:Request,res:Response) : Promise<Response> => {
 
 }
 
+export const check=async(req : Request,res: Response) : Promise<Response> =>{
+    
+    try {
+
+        return res.status(200).json({
+            message:"Everything clear"
+        })
+
+
+    } catch (error) {
+        return res.status(401).json({
+            message:"Invalid token.",
+            error
+        })
+    }
+}
+
+export const refreshtoken=async(req:Request,res:Response): Promise<Response> =>{
+    try {
+        
+        const token=req.cookies.refreshToken;
+
+        if(!token){
+            return res.status(401).json({
+                message:"Token missing."
+            })
+        }
+
+        const decode =await jwt.verify(token,process.env.REFRESH_JWT_SECRET);
+
+        const user=await User.findById(decode);
+
+        if(!user || user.refreshToken !== token){
+            return res.status(401).json({
+                message:"No user found"
+            })
+        }
+
+        const accessToken=jwt.sign({id: user._id},process.env.ACCESS_JWT_SECRET,{expiresIn:'10m'});
+        const refreshToken=jwt.sign({id: user._id},process.env.REFRESH_JWT_SECRET,{expiresIn:'7d'});
+
+        user.refreshToken=refreshToken;
+        res.cookie("refreshToken",refreshToken,{
+            httpOnly:true,
+            secure:false,
+            sameSite:"strict",
+            maxAge:1000*60*60*24*7
+        });
+
+        await user.save();
+
+        return res.status(200).json({
+            message:"New token initailized.",
+            accessToken:accessToken
+        })
+
+        
+    } catch (error:any ) {
+        
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Refresh token expired. Please login again.",
+            });
+        }
+
+        return res.status(403).json({
+        message: "Invalid refresh token",
+        });
+  }
+    
+}
+
+
+export const logout=async(req:Request,res:Response): Promise<Response> =>{
+    try {
+        
+        const token=req.cookies.refreshToken;
+
+        if(!token){
+            return res.status(200).json({
+                message:"Already logout."
+            })
+        }
+
+        const user=await User.findOne({refreshToken:token});
+
+        if(!user){
+            return res.status(401).json({
+                message:"User already logged out."
+            })
+        }
+        
+        user.refreshToken =null;
+
+        await user.save();
+
+
+        res.clearCookie('refreshToken',{
+             httpOnly: true,
+             sameSite: "strict",
+             secure: false,
+        })
+
+        return res.status(200).json({
+            message:"logout successfull."
+        })
+        
+    } catch (error:any) {
+        return res.status(500).json({
+            message:"logout failed"
+        })
+    }
+
+
+}
