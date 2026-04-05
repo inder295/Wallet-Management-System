@@ -20,7 +20,7 @@ export const checkauth=async(req:Request,res:Response,next:NextFunction)=>{
 
         const userAccessToken=authHeader.split(" ")[1];
 
-        const decode =await jwt.verify(userAccessToken,process.env.ACCESS_JWT_SECRET) as JwtPayload;
+        const decode =await jwt.verify(userAccessToken,process.env.ACCESS_JWT_SECRET!) as JwtPayload;
 
         const user=await User.findById(decode);
 

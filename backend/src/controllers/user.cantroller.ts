@@ -87,8 +87,8 @@ export const loginUser=async(req:Request,res:Response) : Promise<Response> => {
             })
         }
 
-        const refreshToken=jwt.sign({userId:user._id},process.env.ACCESS_JWT_SECRET,{expiresIn:'7d'});
-        const accessToken=jwt.sign({userId:user._id},process.env.REFRESH_JWT_SECRET,{expiresIn:'10m'});
+        const refreshToken=jwt.sign({userId:user._id},process.env.ACCESS_JWT_SECRET!,{expiresIn:'7d'});
+        const accessToken=jwt.sign({userId:user._id},process.env.REFRESH_JWT_SECRET!,{expiresIn:'10m'});
 
         user.refreshToken=refreshToken;
         
@@ -107,7 +107,7 @@ export const loginUser=async(req:Request,res:Response) : Promise<Response> => {
         })
 
         
-    } catch (error) {
+    } catch (error:any) {
        return res.status(400).json({
         message:"Error in login.",
         error:error.message
@@ -144,7 +144,7 @@ export const refreshtoken=async(req:Request,res:Response): Promise<Response> =>{
             })
         }
 
-        const decode =await jwt.verify(token,process.env.REFRESH_JWT_SECRET);
+        const decode =await jwt.verify(token,process.env.REFRESH_JWT_SECRET!);
 
         const user=await User.findById(decode);
 
@@ -154,8 +154,8 @@ export const refreshtoken=async(req:Request,res:Response): Promise<Response> =>{
             })
         }
 
-        const accessToken=jwt.sign({id: user._id},process.env.ACCESS_JWT_SECRET,{expiresIn:'10m'});
-        const refreshToken=jwt.sign({id: user._id},process.env.REFRESH_JWT_SECRET,{expiresIn:'7d'});
+        const accessToken=jwt.sign({id: user._id},process.env.ACCESS_JWT_SECRET!,{expiresIn:'10m'});
+        const refreshToken=jwt.sign({id: user._id},process.env.REFRESH_JWT_SECRET!,{expiresIn:'7d'});
 
         user.refreshToken=refreshToken;
         res.cookie("refreshToken",refreshToken,{
