@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv"
 import connnectDb from "./db/db";
 import userRouter from "./routes/user.route";
-import cookieParser from "cookie-parser"
+import cookieParser from "cookie-parser" 
 
 
 dotenv.config();

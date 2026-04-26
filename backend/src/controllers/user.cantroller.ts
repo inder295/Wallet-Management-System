@@ -3,7 +3,7 @@ import { IUser, User } from "../models/user.model";
 import { registerSchema } from "../validations/user.validation";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv"
-import  jwt  from "jsonwebtoken";
+import  jwt, { JwtPayload }  from "jsonwebtoken";
 
 dotenv.config();
 
@@ -148,7 +148,7 @@ export const refreshtoken=async(req:Request,res:Response): Promise<Response> =>{
             })
         }
 
-        const decode =await jwt.verify(token,process.env.REFRESH_JWT_SECRET!);
+        const decode =jwt.verify(token,process.env.REFRESH_JWT_SECRET!) as JwtPayload;
 
         const user=await User.findById(decode.userId);
         if(!user || user.refreshToken !== token){
