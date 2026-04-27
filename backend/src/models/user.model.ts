@@ -1,10 +1,12 @@
-import mongoose from "mongoose";
+import mongoose , { Document, Types } from "mongoose";
 
 export interface IUser {
   fullname:string;
   email:string;
   password:string;
-  refreshToken?:string | null
+  refreshToken?:string | null,
+  account?:Types.ObjectId[],
+  transaction: Types.ObjectId[];
 }
 
 const userSchema=new mongoose.Schema<IUser>({
@@ -25,7 +27,16 @@ const userSchema=new mongoose.Schema<IUser>({
     refreshToken:{
         type:String,
         default:null
-    }
+    },
+    account:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Account"
+    }],
+    transaction:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Transaction"
+    }]
+
 
 },{
     timestamps:true
